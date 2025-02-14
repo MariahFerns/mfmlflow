@@ -61,12 +61,22 @@ mlflow.set_experiment("new_experiments_demo")
 mlflow.set_tracking_uri(uri="http://127.0.0.1:5000/")
 
 
-with mlflow.start_run():
+with mlflow.start_run() as run:
+    # 1. Log params
     mlflow.log_params(params)
+
+    # 2. Log metrics
     mlflow.log_metrics({
         'accuracy': report['accuracy'],
         'recall_class_0': report['0']['recall'],
         'recall_class_1': report['1']['recall'],
         'f1_score_macro': report['macro avg']['f1-score']
     })
+    
+    # 3. Log model
     mlflow.sklearn.log_model(model, "Random Forest") 
+    
+    # 4. Register model
+    model_uri = f'runs:/{run.info.run_id}/random_forest_model'
+    mlflow.register_model(model_uri = model_uri, name = 'RandomForestModel')
+    print(f'Model registered in MLFlow under name "RandomForestModel"')
