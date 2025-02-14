@@ -21,53 +21,52 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_
 
 
 # Define the model hyperparameters
-lr_params = {
-    "solver": "lbfgs",
-    "max_iter": 1000,
-    "multi_class": "auto",
-    "random_state": 8888,
+# LogisticRegression
+# params = {
+#     "solver": "lbfgs",
+#     "max_iter": 1000,
+#     "multi_class": "auto",
+#     "random_state": 8888,
+# }
+
+# RandomForestClassifier
+params = {
+    'n_estimators': 100,
+    'max_depth':2,
+    'random_state':8888
 }
 
 # Train the LogisticRegression model
-lr_model = LogisticRegression(**lr_params)
-lr_model.fit(X_train, y_train)
-y_test_pred_lr = lr_model.predict(X_test)
+# model = LogisticRegression(**params)
+# model.fit(X_train, y_train)
+# y_test_pred = model.predict(X_test)
 
 # Train the RandomForestClassifier model
-rfc_model = RandomForestClassifier(n_estimators=100, max_depth=3)
-rfc_model.fit(X_train, y_train)
-y_test_pred_rfc = rfc_model.predict(X_test)
+model = RandomForestClassifier(**params)
+model.fit(X_train, y_train)
+y_test_pred = model.predict(X_test)
 
 # Evaluate the models
-lr_f1_score = f1_score(y_test, y_test_pred_lr)
-rfc_f1_score = f1_score(y_test, y_test_pred_rfc)
-lr_cr = classification_report(y_test, y_test_pred_lr)
-rfc_cr = classification_report(y_test, y_test_pred_rfc)
+# f1score = f1_score(y_test, y_test_pred)
+# report = classification_report(y_test, y_test_pred, output_dict=True)
 
-print('Logistic regression F1-score: ', lr_f1_score)
-print('Logistic regression classification report:\n', lr_cr)
-print('\n')
-print('Random Forest F1-score: ', rfc_f1_score)
-print('Random Forest classification report::\n', rfc_cr)
-
-
-# Convert report to dict
-lr_cr_dict = classification_report(y_test, y_test_pred_lr, output_dict=True)
-rfc_cr_dict = classification_report(y_test, y_test_pred_rfc, output_dict=True)
+f1score = f1_score(y_test, y_test_pred)
+report = classification_report(y_test, y_test_pred, output_dict=True)
 
 
 # Track experiment using MLFlow
 import mlflow
 
-mlflow.set_experiment("LRexperiment1402")
+mlflow.set_experiment("new_experiments_demo")
 mlflow.set_tracking_uri(uri="http://127.0.0.1:5000/")
 
+
 with mlflow.start_run():
-    mlflow.log_params(lr_params)
+    mlflow.log_params(params)
     mlflow.log_metrics({
-        'accuracy': lr_cr_dict['accuracy'],
-        'recall_class_0': lr_cr_dict['0']['recall'],
-        'recall_class_1': lr_cr_dict['1']['recall'],
-        'f1_score_macro': lr_cr_dict['macro avg']['f1-score']
+        'accuracy': report['accuracy'],
+        'recall_class_0': report['0']['recall'],
+        'recall_class_1': report['1']['recall'],
+        'f1_score_macro': report['macro avg']['f1-score']
     })
-    mlflow.sklearn.log_model(lr_model, "Logistic Regression") 
+    mlflow.sklearn.log_model(model, "Random Forest") 
